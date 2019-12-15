@@ -32,23 +32,19 @@ namespace vis {
                 result.Add(value);
             return result;
         }
-        public static long gcd(params long[] values)
+        public static long gcd(params long[] values) => gcd((IEnumerable<long>)values);
+        public static long gcd<T>(IEnumerable<T> values) => gcd(values.Select(v => Convert.ToInt64(v)));
+        public static long gcd(IEnumerable<long> values)
         {
-            long result = 1;
-            int i;
-            List<List<long>> factors = new List<List<long>>();
-            for (i = 0; i < values.Length; i++) {
-                factors.Add(Factor(values[i]));
-            }
-            i = 0;
-            while (i < factors[0].Count) {
-                long factor = factors[0][i];
-                if (factors.All(l => l.Contains(factor))) {
-                    result *= factor;
-                    foreach (var fl in factors)
-                        fl.Remove(factor);
-                } else {
-                    i++;
+            var result = Math.Abs(values.First());
+            foreach (var value in values.Skip(1)) {
+                var next = Math.Abs(value);
+                while (true) {
+                    var remainder = result % next;
+                    result = next;
+                    if (remainder == 0)
+                        break;
+                    next = remainder;
                 }
             }
             return result;
@@ -66,7 +62,7 @@ namespace vis {
                     var myear = r.Match(Path.GetDirectoryName(Path.GetFullPath(path)));
                     string session;
                     using (var rk = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Adron\AoC")) {
-                        session = rk.GetValue("session") as string; 
+                        session = rk.GetValue("session") as string;
                     }
                     if (session == null) {
                         Console.WriteLine("Warning: No session in registry");
