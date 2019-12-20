@@ -20,6 +20,7 @@ namespace vis {
         {
             return Math.Abs(other.x - x) + Math.Abs(other.y - y);
         }
+        public Point[] Neighbours => new Point[] { (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1) };
         public Point(int x, int y) { this.x = x; this.y = y; }
         public Point((int x, int y) location) : this(location.x, location.y) { }
         public override string ToString() => $"({x}, {y})";

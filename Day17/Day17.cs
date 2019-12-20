@@ -22,6 +22,10 @@ namespace Day17 {
             public bool trace;
             public Thread thread;
             internal long len;
+            public delegate bool OutputFunc(long value);
+            public delegate long? InputFunc();
+            public event OutputFunc Output;
+            public event InputFunc Input;
             public Program(string data) : this(data.Split(',').Select(long.Parse))
             {
             }
@@ -159,12 +163,16 @@ namespace Day17 {
                             break;
                         case 3: {
                                 if (trace) Console.WriteLine($"{ip,-4} {op:###00} input => {formatoutparam(1)}");
-                                outparam(1, inputs.Take());
+                                long? v = Input?.Invoke();
+                                if (!v.HasValue)
+                                    v = inputs.Take();
+                                outparam(1, v.Value);
                             }
                             break;
                         case 4: {
                                 if (trace) Console.WriteLine($"{ip,-4} {op:###00} {formatparam(1)} => output");
-                                outputs.Add(param(1));
+                                if (!(Output?.Invoke(param(1)) ?? false))
+                                    outputs.Add(param(1));
                             }
                             break;
                         case 5: {
@@ -234,7 +242,27 @@ namespace Day17 {
             string input = inputarg;
 
             Program program = new Program(input);
-            program.trace = false;
+
+            int x = 0;
+            int y = 0;
+            var path = new HashSet<Point>();
+            bool output(long c)
+            {
+                Console.Write((char)c);
+                if (c == '\n') {
+                    y++; x = 0;
+                } else {
+                    if (c == '#')
+                        path.Add((x, y));
+                    x++;
+                }
+                return true;
+            }
+            program.Output += output;
+            program.Run();
+            Console.WriteLine($"Alignment: {path.Where(p => p.Neighbours.All(n => path.Contains(n))).Sum(p => p.x*p.y)}");
+
+            program = new Program(input);
             program.orig[0] = 2;
             program.RunThread();
 
@@ -243,12 +271,12 @@ namespace Day17 {
             "R,10,R,6,R,4\n" +
             "R,4,L,12,R,6,L,12\n" +
             "n\n";
-            
-            foreach(var c in data) {
+
+            foreach (var c in data) {
                 program.inputs.Add(c);
             }
 
-            
+
             try {
                 while (true) {
                     long v = program.outputs.Take();
