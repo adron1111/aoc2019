@@ -21,13 +21,13 @@ namespace Day16 {
             Solve(input);
         }
 
-        static void fftpass(byte[] buf)
+        static void fftpass(byte[] buf, int start = 0)
         {
             var precalc = new int[buf.Length + 1];
-            for (int i = 0; i < buf.Length; i++) {
+            for (int i = start; i < buf.Length; i++) {
                 precalc[i + 1] = precalc[i] + buf[i];
             }
-            for (int stride = 1; stride <= buf.Length; stride++) {
+            for (int stride = 1+start; stride <= buf.Length; stride++) {
                 int sum = 0;
                 int i = -1;
                 while (true) {
@@ -91,7 +91,7 @@ namespace Day16 {
             }
 
             for (int ph = 0; ph < 100; ph++) {
-                fftpass(buf);
+                fftpass(buf, outoffs);
             }
             if (outoffs < buf.Length - 8) {
                 for (int i = 0; i < 8; i++) {
